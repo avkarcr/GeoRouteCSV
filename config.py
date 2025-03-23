@@ -1,6 +1,7 @@
-DEBUG_MODE = True
+DEBUG_MODE = False
 GEO_SYSTEM = 'openrouteservice'  # yandex, google
 COORD_DATA = './data/coordinates.json'
+OUTPUT_FILE = "output.csv"
 
 VEHICLES = {
     'car': {

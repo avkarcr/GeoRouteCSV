@@ -91,7 +91,7 @@ def get_open_profile():
         print(f"{i}. {key}")
     while True:
         try:
-            selection = int(input("Введите номер: "))
+            selection = int(input("\nВведите номер: "))
             if 1 <= selection <= len(VEHICLES):
                 selected_key = list(VEHICLES.keys())[selection - 1]
                 selected_profile = VEHICLES[selected_key]
