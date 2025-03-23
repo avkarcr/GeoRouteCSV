@@ -1,0 +1,10 @@
+certifi==2025.1.31
+charset-normalizer==3.4.1
+colorama==0.4.6
+googlemaps==4.10.0
+idna==3.10
+openrouteservice==2.3.3
+pyfiglet==1.0.2
+python-dotenv==1.0.1
+requests==2.32.3
+urllib3==2.3.0
