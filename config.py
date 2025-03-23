@@ -1,12 +1,6 @@
 DEBUG_MODE = True
 GEO_SYSTEM = 'openrouteservice'  # yandex, google
-
-MODES = ['cities', 'coordinates', 'manual']
-
-DATA = {
-    'cities': 'input_cities.json',
-    'coordinates': 'input_coordinates.json',
-}
+COORD_DATA = './data/coordinates.json'
 
 VEHICLES = {
     'car': {

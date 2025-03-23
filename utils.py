@@ -62,6 +62,7 @@ def print_banner():
     init(autoreset=True)
     figlet = Figlet(font='slant')
     banner_text = figlet.renderText('GeoRouteCSV')
+    print('=================================================================')
     print(Fore.GREEN + banner_text + Style.RESET_ALL)
 
 
@@ -85,7 +86,7 @@ def get_coordinates(client, city_name):
 
 
 def get_open_profile():
-    print("Выберите тип транспортного средства:")
+    print(f"\nВыберите тип транспортного средства:")
     for i, key in enumerate(VEHICLES.keys(), start=1):
         print(f"{i}. {key}")
     while True:
@@ -100,25 +101,4 @@ def get_open_profile():
                 print("⚠️ Неверный номер. Повторите.")
         except ValueError:
             print("⚠️ Введите число.")
-
     return selected_profile['open_profile'], selected_profile['extras']
-
-
-def get_calc_method():
-    print("Выберите тип исходных данных:")
-    # for i, mode in enumerate(MODES, start=1):
-    #     print(f"{i}. {mode}")
-    print(f"1. Взять названия городов из файла JSON")
-    print(f"2. Взять координаты из файла JSON")
-    print(f"3. Ручной ввод названий городов")
-    while True:
-        try:
-            selection = int(input("Введите номер: "))
-            if 1 <= selection <= len(MODES):
-                selected_mode = MODES[selection - 1]
-                print(f"\n✅ Вы выбрали: {selected_mode}\n")
-                return MODES[selection-1]
-            else:
-                print("⚠️ Неверный номер. Повторите.")
-        except ValueError:
-            print("⚠️ Введите число.")

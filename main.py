@@ -3,59 +3,55 @@ import json, itertools
 import openrouteservice
 from openrouteservice.directions import directions
 
-from config import GEO_SYSTEM, DATA, DEBUG_MODE
+from config import GEO_SYSTEM, COORD_DATA, DEBUG_MODE
 from utils import (get_coordinates, get_open_profile, get_api_key,
-                   get_calc_method, print_banner, get_json_input_path)
+                   print_banner, get_json_input_path)
 
 print_banner()
 
 if DEBUG_MODE:
-    input_data_test = './input_cities.json'
+    input_data = './input.json'
 else:
-    input_data_test = get_json_input_path()
-
-MODE = get_calc_method()
-input_data = DATA[MODE]
+    input_data = get_json_input_path()
+with open(input_data, 'r') as file:
+    data = json.load(file)
 
 api_key = get_api_key(GEO_SYSTEM)
 client = openrouteservice.Client(key=api_key)
 open_profile, extras = get_open_profile()
 
-routes_to_calculate = []
+with open(COORD_DATA, 'r', encoding='utf-8') as f:
+    try:
+        known_coords = json.load(f)
+    except json.JSONDecodeError:
+        print('В файле с координатами ошибка декодирования json')
+        exit(1)
+coord_map = {item['name']: item for item in known_coords}
+new_coords = []
 
-if MODE == 'manual':
-    city1_name = input('Введите первый город (ОТКУДА): ')
-    city2_name = input('Введите второй город (КУДА): ')
-    city1_coord = get_coordinates(client, city1_name)
-    city2_coord = get_coordinates(client, city2_name)
-    routes_to_calculate.append((
-        {'name': city1_name, 'coord': city1_coord},
-        {'name': city2_name, 'coord': city2_coord}
-    ))
-elif MODE == 'cities':
-    with open(input_data, 'r') as file:
-        data = json.load(file)
-    city_names = set()
-    for pair in data:
-        city_names.update(pair)
-    city_coords = {}
-    for city_name in city_names:
-        city_coords[city_name] = get_coordinates(client, city_name)
-    for city1, city2 in data:
-        routes_to_calculate.append((
-            {'name': city1, 'coord': city_coords[city1]},
-            {'name': city2, 'coord': city_coords[city2]}
-        ))
-elif MODE == 'coordinates':
-    with open(input_data, 'r') as file:
-        data = json.load(file)
-    for city1, city2 in itertools.combinations(data, 2):
-        routes_to_calculate.append((
-            {'name': city1['name'], 'coord': [city1['lon'], city1['lat']]},
-            {'name': city2['name'], 'coord': [city2['lon'], city2['lat']]}
-        ))
-else:
-    raise KeyError("Ошибка MODE в config.py")
+city_names = set()
+for pair in data:
+    city_names.update(pair)
+
+for city in city_names:
+    if city not in coord_map:
+        try:
+            lon, lat = get_coordinates(client, city)  # формат [lon, lat]
+            print(f"📍 Найдены координаты для {city}: {lat}, {lon}")
+            coord_entry = {
+                "name": city,
+                "lat": lat,
+                "lon": lon
+            }
+            new_coords.append(coord_entry)
+            coord_map[city] = coord_entry
+        except Exception as e:
+            print(f"❌ Ошибка при получении координат для {city}: {e}")
+
+all_coords = list(coord_map.values())
+with open(COORD_DATA, 'w', encoding='utf-8') as f:
+    json.dump(all_coords, f, ensure_ascii=False, indent=2)
+print(f"\n✅ Координаты обновлены. Всего городов в базе: {len(all_coords)}")
 
 for c1, c2 in routes_to_calculate:
     coords = [c1['coord'], c2['coord']]
