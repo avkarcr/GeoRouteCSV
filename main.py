@@ -51,7 +51,14 @@ for city in city_names:
 all_coords = list(coord_map.values())
 with open(COORD_DATA, 'w', encoding='utf-8') as f:
     json.dump(all_coords, f, ensure_ascii=False, indent=2)
-print(f"\n✅ Координаты обновлены. Всего городов в базе: {len(all_coords)}")
+print(f"\n✅ Координаты обновлены. Всего городов в базе: {len(all_coords)}\n")
+
+routes_to_calculate = {}
+for city1, city2 in data:
+    routes_to_calculate.append((
+        {'name': city1, 'coord': all_coords[city1]},
+        {'name': city2, 'coord': all_coords[city2]}
+    ))
 
 for c1, c2 in routes_to_calculate:
     coords = [c1['coord'], c2['coord']]
