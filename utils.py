@@ -3,7 +3,7 @@ import os
 import json
 
 from dotenv import load_dotenv
-from config import VEHICLES, MODES
+from config import VEHICLES
 from pyfiglet import Figlet
 from colorama import Fore, Style, init
 

@@ -36,7 +36,7 @@ for pair in data:
 for city in city_names:
     if city not in coord_map:
         try:
-            lon, lat = get_coordinates(client, city)  # формат [lon, lat]
+            lon, lat = get_coordinates(client, city)
             print(f"📍 Найдены координаты для {city}: {lat}, {lon}")
             coord_entry = {
                 "name": city,
@@ -45,23 +45,33 @@ for city in city_names:
             }
             new_coords.append(coord_entry)
             coord_map[city] = coord_entry
+            print(f"\n✅ Координаты обновлены.")
         except Exception as e:
             print(f"❌ Ошибка при получении координат для {city}: {e}")
 
 all_coords = list(coord_map.values())
 with open(COORD_DATA, 'w', encoding='utf-8') as f:
     json.dump(all_coords, f, ensure_ascii=False, indent=2)
-print(f"\n✅ Координаты обновлены. Всего городов в базе: {len(all_coords)}\n")
+print(f"\n✅ Всего городов в базе: {len(all_coords)}\n")
 
-routes_to_calculate = {}
+routes_to_calculate = []
 for city1, city2 in data:
     routes_to_calculate.append((
-        {'name': city1, 'coord': all_coords[city1]},
-        {'name': city2, 'coord': all_coords[city2]}
+        {'name': city1, 'coord': {
+            'lat': coord_map[city1]['lat'],
+            'lon': coord_map[city1]['lon'],
+        }},
+        {'name': city2, 'coord': {
+            'lat': coord_map[city2]['lat'],
+            'lon': coord_map[city2]['lon'],
+        }},
     ))
 
 for c1, c2 in routes_to_calculate:
-    coords = [c1['coord'], c2['coord']]
+    coords = [
+        [c1['coord']['lon'], c1['coord']['lat']],
+        [c2['coord']['lon'], c2['coord']['lat']],
+    ]
     try:
         if not extras:
             route = directions(client, coords, profile=open_profile)
