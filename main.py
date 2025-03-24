@@ -67,24 +67,6 @@ for city1, city2 in data:
         }},
     ))
 
-# for c1, c2 in routes_to_calculate:
-#     coords = [
-#         [c1['coord']['lon'], c1['coord']['lat']],
-#         [c2['coord']['lon'], c2['coord']['lat']],
-#     ]
-#     try:
-#         if not extras:
-#             route = directions(client, coords, profile=open_profile)
-#         else:
-#             route = directions(client, coords, profile=open_profile,
-#                                options={'profile_params': {'restrictions': extras}})
-#         distance_m = route['routes'][0]['summary']['distance']
-#         distance_km = distance_m / 1000
-#         print(f"🚛 {c1['name']} → {c2['name']}: {distance_km:.1f} км")
-#
-#     except Exception as e:
-#         print(f"❌ Ошибка при расчёте маршрута {c1['name']} → {c2['name']}: {e}")
-
 with open(OUTPUT_FILE, mode='w', newline='', encoding='utf-8') as f:
     writer = csv.writer(f)
     writer.writerow(['from_city', 'to_city', 'distance_km'])
