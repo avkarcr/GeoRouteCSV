@@ -13,11 +13,12 @@ git clone https://github.com/avkarcr/GeoRouteCSV.git
 ```
 ### Убедитесь, что у вас установлен Python 3.9+:
 ```bash
-python --version
+python3 --version
 ```
 ### Создайте виртуальное окружение:
 ```bash
-python -m venv venv
+
+python3 -m venv venv
 source venv/bin/activate   # для Linux/macOS
 venv\Scripts\activate      # для Windows
 ```
