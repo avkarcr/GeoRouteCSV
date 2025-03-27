@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import requests
 
 from dotenv import load_dotenv
 from config import VEHICLES
@@ -8,6 +9,7 @@ from pyfiglet import Figlet
 from colorama import Fore, Style, init
 
 load_dotenv()
+init(autoreset=True)
 
 
 def get_api_key(geo_system):
@@ -59,7 +61,6 @@ def print_help():
 
 
 def print_banner():
-    init(autoreset=True)
     figlet = Figlet(font='slant')
     banner_text = figlet.renderText('GeoRouteCSV')
     print('=================================================================')
@@ -102,3 +103,20 @@ def get_open_profile():
         except ValueError:
             print("⚠️ Введите число.")
     return selected_profile['open_profile'], selected_profile['extras']
+
+
+def check_ors_connection():
+    url = 'http://localhost:8080/ors/v2/health'
+    print('Проверяем соединение с сервером...', end='', flush=True)
+    try:
+        response = requests.get(url, timeout=2)
+        if response.status_code == 200 and response.json().get('status') == 'ready':
+            print(f' {Fore.GREEN}[OK]')
+        else:
+            print(f' {Fore.RED}[FAILED]')
+            print(f'Ответ сервера: {response.text}')
+            sys.exit(1)
+    except Exception as e:
+        print(f' {Fore.RED}[FAILED]')
+        print(f'Ошибка: {e}')
+        sys.exit(1)

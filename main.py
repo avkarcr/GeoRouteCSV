@@ -5,9 +5,10 @@ from openrouteservice.directions import directions
 
 from config import GEO_SYSTEM, COORD_DATA, DEBUG_MODE, OUTPUT_FILE
 from utils import (get_coordinates, get_open_profile, get_api_key,
-                   print_banner, get_json_input_path)
+                   print_banner, get_json_input_path, check_ors_connection)
 
 print_banner()
+check_ors_connection()
 
 if DEBUG_MODE:
     input_data = './input.json'
