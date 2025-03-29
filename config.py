@@ -1,7 +1,10 @@
 DEBUG_MODE = True
-GEO_SYSTEM = 'openrouteservice'  # yandex, google
+GEO_SYSTEM = 'ors_vps'  # yandex, google, openrouteservice - cloud ORS, ors_vps - docker ORS
 COORD_DATA = './data/coordinates.json'
 OUTPUT_FILE = "output.csv"
+MAX_DELAY = 120  # in sec.
+NOMINATIM_LOCALPORT = 7070
+OSR_LOCALPORT = 8080
 
 VEHICLES = {
     'car': {

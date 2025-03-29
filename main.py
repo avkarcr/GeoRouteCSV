@@ -1,43 +1,36 @@
-import json, csv
+import json
+import csv
+import sys
 
-import openrouteservice
 from openrouteservice.directions import directions
 
-from config import GEO_SYSTEM, COORD_DATA, DEBUG_MODE, OUTPUT_FILE
-from utils import (get_coordinates, get_open_profile, get_api_key,
-                   print_banner, get_json_input_path, check_ors_connection)
+from config import COORD_DATA, OUTPUT_FILE
+from utils import (get_open_profile, get_coord_map, get_geo_client,
+                   print_banner, get_json_data)
 
 print_banner()
-check_ors_connection()
 
-if DEBUG_MODE:
-    input_data = './input.json'
-else:
-    input_data = get_json_input_path()
-with open(input_data, 'r') as file:
-    data = json.load(file)
-
-api_key = get_api_key(GEO_SYSTEM)
-client = openrouteservice.Client(key=api_key)
+data = get_json_data()
+coord_map = get_coord_map()
 open_profile, extras = get_open_profile()
+client = get_geo_client(vehicle_type=open_profile)
+if not client.check_connection():
+    sys.exit(1)
 
-with open(COORD_DATA, 'r', encoding='utf-8') as f:
-    try:
-        known_coords = json.load(f)
-    except json.JSONDecodeError:
-        print('В файле с координатами ошибка декодирования json')
-        exit(1)
-coord_map = {item['name']: item for item in known_coords}
-new_coords = []
-
+# Собираем список уникальных названий городов|пунктов
 city_names = set()
 for pair in data:
     city_names.update(pair)
 
+# Получаем координаты для полученного списка и сохраняем их в файле с координатами
+new_coords = []
 for city in city_names:
     if city not in coord_map:
         try:
-            lon, lat = get_coordinates(client, city)
+            res = client.get_coordinates(city)
+            if len(res) != 0:
+                break
+            lon, lat = res
             print(f"📍 Найдены координаты для {city}: {lat}, {lon}")
             coord_entry = {
                 "name": city,
@@ -97,3 +90,17 @@ with open(OUTPUT_FILE, mode='w', newline='', encoding='utf-8') as f:
 
         except Exception as e:
             print(f"❌ Ошибка при расчёте маршрута {c1['name']} → {c2['name']}: {e}")
+
+
+
+# from ors_local import ORSLocalGeoSystem
+#
+# geo = ORSLocalGeoSystem(vehicle_type='driving-hgv')
+#
+# geo.check_connection()
+#
+# coord1 = geo.get_coordinates("Станция Силикатная")
+# coord2 = geo.get_coordinates("Барнаул")
+#
+# distance = geo.get_distance(coord1, coord2)
+# print(f"Расстояние: {distance / 1000:.2f} км")

@@ -1,12 +1,13 @@
 import sys
 import os
 import json
-import requests
 
 from dotenv import load_dotenv
-from config import VEHICLES
+from config import VEHICLES, DEBUG_MODE, GEO_SYSTEM, COORD_DATA
 from pyfiglet import Figlet
 from colorama import Fore, Style, init
+
+from modules.geo_clients import ORSLocalGeoSystem, ORSCloudGeoSystem
 
 load_dotenv()
 init(autoreset=True)
@@ -67,25 +68,6 @@ def print_banner():
     print(Fore.GREEN + banner_text + Style.RESET_ALL)
 
 
-def get_coordinates(client, city_name):
-    response = client.request(
-        '/geocode/search',
-        get_params={
-            'text': city_name,
-            'size': 1,
-            'boundary.country': 'RU',
-        },
-    )
-    features = response.get('features')
-    if not features:
-        return "not found"
-    if len(features) > 1:
-        return "not unique"
-    coords = features[0]['geometry']['coordinates']
-    # return coords[0], coords[1]
-    return coords
-
-
 def get_open_profile():
     print(f"\nВыберите тип транспортного средства:")
     for i, key in enumerate(VEHICLES.keys(), start=1):
@@ -105,18 +87,55 @@ def get_open_profile():
     return selected_profile['open_profile'], selected_profile['extras']
 
 
-def check_ors_connection():
-    url = 'http://localhost:8080/ors/v2/health'
-    print('Проверяем соединение с сервером...', end='', flush=True)
+def get_json_data():
+    data = False
+    if DEBUG_MODE:
+        input_data = './input.json'
+    else:
+        input_data = get_json_input_path()
     try:
-        response = requests.get(url, timeout=2)
-        if response.status_code == 200 and response.json().get('status') == 'ready':
-            print(f' {Fore.GREEN}[OK]')
-        else:
-            print(f' {Fore.RED}[FAILED]')
-            print(f'Ответ сервера: {response.text}')
-            sys.exit(1)
+        with open(input_data, 'r') as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        print(f"❌ Файл не найден: {input_data}")
+    except json.JSONDecodeError:
+        print(f"❌ Файл {input_data} не является корректным JSON")
+    except PermissionError:
+        print(f"❌ Нет прав на чтение файла: {input_data}")
     except Exception as e:
-        print(f' {Fore.RED}[FAILED]')
-        print(f'Ошибка: {e}')
+        print(f"❌ Неожиданная ошибка при чтении файла: {e}")
+    if not data:
         sys.exit(1)
+    return data
+
+
+def get_coord_map():
+    data = False
+    try:
+        with open(COORD_DATA, 'r', encoding='utf-8') as f:
+                known_coords = json.load(f)
+        data = {item['name']: item for item in known_coords}
+    except FileNotFoundError:
+        print(f"❌ Файл не найден: {COORD_DATA}")
+    except json.JSONDecodeError:
+        print(f"❌ Файл {COORD_DATA} не является корректным JSON")
+    except PermissionError:
+        print(f"❌ Нет прав на чтение файла: {COORD_DATA}")
+    except Exception as e:
+        print(f"❌ Неожиданная ошибка при чтении файла: {e}")
+    if not data:
+        sys.exit(1)
+    return data
+
+
+def get_geo_client(vehicle_type):
+    if GEO_SYSTEM == 'ors_vps':
+        client = ORSLocalGeoSystem(vehicle_type=vehicle_type)
+    elif GEO_SYSTEM == 'openrouteservice':
+        client = ORSCloudGeoSystem(vehicle_type=vehicle_type)
+    else:
+        print(f"❌ Система с геоданными {GEO_SYSTEM} не обнаружена, проверьте config.py")
+        client = False
+    if not client:
+        sys.exit(1)
+    return client
