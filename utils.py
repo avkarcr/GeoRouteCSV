@@ -114,6 +114,9 @@ def get_coord_map():
     try:
         with open(COORD_DATA, 'r', encoding='utf-8') as f:
                 known_coords = json.load(f)
+        for item in known_coords:
+            item['lat'] = float(item['lat'])
+            item['lon'] = float(item['lon'])
         data = {item['name']: item for item in known_coords}
     except FileNotFoundError:
         print(f"❌ Файл не найден: {COORD_DATA}")

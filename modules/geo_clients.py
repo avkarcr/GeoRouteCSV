@@ -1,10 +1,10 @@
-import time
 import requests
 from abc import ABC, abstractmethod
 from colorama import Fore, Style, init
-from config import OSR_LOCALPORT, NOMINATIM_LOCALPORT
+from loguru import logger
 # import openrouteservice
 
+from config import ORS_LOCALPORT, NOMINATIM_LOCALPORT
 from modules.decorators import with_retry_on_failure
 
 init(autoreset=True)
@@ -68,13 +68,13 @@ class ORSLocalGeoSystem(GeoSystem):
     def __init__(self, vehicle_type='driving-car'):
         super().__init__(vehicle_type)
         self.base_url_geodata = f'http://localhost:{NOMINATIM_LOCALPORT}'
-        self.base_url_direction = f'http://localhost:{OSR_LOCALPORT}/ors/v2'
+        self.base_url_direction = f'http://localhost:{ORS_LOCALPORT}/ors/v2'
 
     def check_connection(self) -> bool:
         print("Проверяем соединение с сервером Nominatim...", end='', flush=True)
         try:
             r = requests.get(f"{self.base_url_geodata}/status", timeout=2)
-            if r.status_code == 200 and r.json().get('status') == 'OK':
+            if r.status_code == 200 and r.text == 'OK':
                 print(f" {Fore.GREEN}[OK]{Style.RESET_ALL}")
             else:
                 print(f" {Fore.RED}[FAILED] — статус: {r.text}")
@@ -103,23 +103,22 @@ class ORSLocalGeoSystem(GeoSystem):
         """
         try:
             response = requests.get(
-                f"{self.base_url}/geocode/search",
-                params={'text': name, 'size': 1},
+                f"{self.base_url_geodata}/search",
+                params={'q': name, 'format': 'json', 'limit': 1},
                 timeout=5
             )
-            data = response.json()
-            features = data.get('features')
-            if not features:
-                raise ValueError(f"Город не найден: {name}")  # todo переделать, иначе декоратор сработает
-            return features[0]['geometry']['coordinates']  # [lon, lat]
-        except RuntimeError:
-            print(f"При получении координат для {name} потеряна связь с сервером."
-                  f"Ждем 5 секунд до следующей попытки...")
-            time.sleep(5)
-            return []
+            if response.status_code == 200:
+                data = response.json()
+                if data:
+                    return [data[0]['lat'], data[0]['lon']]
+                else:
+                    return [False, False]
+            else:
+                logger.error(f"Город {name}: ошибка при выполнении запроса: {response.status_code}")
+                return []
         except Exception as e:
-            print(f"Ошибка при геокодировании '{name}': {e}")
-            return [False, False]
+            logger.error(f"Ошибка при геокодировании '{name}': {e}")
+            return []
 
     def get_distance(self, coord1: list, coord2: list) -> float:
         """
@@ -128,17 +127,17 @@ class ORSLocalGeoSystem(GeoSystem):
         """
         try:
             response = requests.post(
-                f"{self.base_url}/v2/directions/{self.vehicle_type}/geojson",
+                f"{self.base_url_direction}/directions/{self.vehicle_type}",
                 json={
-                    "coordinates": [coord1, coord2],
-                    "instructions": False
+                    "coordinates": [coord1, coord2]
                 },
                 timeout=10
             )
             data = response.json()
-            return data['features'][0]['properties']['summary']['distance']  # в метрах
+            return data['routes'][0]['summary']['distance']  # в метрах
         except Exception as e:
-            raise RuntimeError(f"Ошибка при получении маршрута: {e}")
+            logger.error(f"Ошибка при получении маршрута: {e}")
+            return 0
 
 
 class ORSCloudGeoSystem(GeoSystem):
