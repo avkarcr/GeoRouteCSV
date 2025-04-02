@@ -4,7 +4,7 @@ COORD_DATA = './data/coordinates.json'
 OUTPUT_FILE = "output.csv"
 MAX_DELAY = 120  # in sec.
 NOMINATIM_LOCALPORT = 7070
-ORS_LOCALPORT = 8082
+ORS_LOCALPORT = 8080
 
 VEHICLES = {
     'car': {

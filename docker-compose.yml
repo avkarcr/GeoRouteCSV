@@ -1,0 +1,76 @@
+services:
+  nominatim:
+    image: mediagis/nominatim:5.0
+    container_name: nominatim
+    ports:
+      - "127.0.0.1:7070:7070"
+    env_file:
+      - .env.docker
+    environment:
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS}
+      POSTGRES_MAINTENANCE_WORK_MEM: ${POSTGRES_MAINTENANCE_WORK_MEM}
+      POSTGRES_AUTOVACUUM_WORK_MEM: ${POSTGRES_AUTOVACUUM_WORK_MEM}
+      POSTGRES_WORK_MEM: ${POSTGRES_WORK_MEM}
+      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE}
+      POSTGRES_SYNCHRONOUS_COMMIT: ${POSTGRES_SYNCHRONOUS_COMMIT}
+      POSTGRES_MAX_WAL_SIZE: ${POSTGRES_MAX_WAL_SIZE}
+      POSTGRES_CHECKPOINT_TIMEOUT: ${POSTGRES_CHECKPOINT_TIMEOUT}
+      POSTGRES_CHECKPOINT_COMPLETION_TARGET: ${POSTGRES_CHECKPOINT_COMPLETION_TARGET}
+      PBF_PATH: ${PBF_PATH}
+      REPLICATION_URL: ${REPLICATION_URL}
+      REPLICATION_UPDATE_INTERVAL: ${REPLICATION_UPDATE_INTERVAL}
+      REPLICATION_RECHECK_INTERVAL: ${REPLICATION_RECHECK_INTERVAL}
+      UPDATE_MODE: ${UPDATE_MODE}
+      FREEZE: ${FREEZE}
+      REVERSE_ONLY: ${REVERSE_ONLY}
+      IMPORT_WIKIPEDIA: ${IMPORT_WIKIPEDIA}
+      IMPORT_US_POSTCODES: ${IMPORT_US_POSTCODES}
+      IMPORT_GB_POSTCODES: ${IMPORT_GB_POSTCODES}
+      IMPORT_STYLE: ${IMPORT_STYLE}
+      IMPORT_TIGER_ADDRESSES: ${IMPORT_TIGER_ADDRESSES}
+      THREADS: ${THREADS}
+      NOMINATIM_PASSWORD: ${NOMINATIM_PASSWORD}
+    volumes:
+      - $HOME/maps/russia-latest.osm.pbf:/nominatim/data.osm.pbf
+      - nominatim-postgres-data:/var/lib/postgresql
+      - nominatim-flatnode:/nominatim/flatnode
+    shm_size: '2gb'
+    networks:
+      - ors_nominatim_network
+
+  ors-docker:
+    build:
+      context: ./
+    container_name: openrouteservice
+    ports:
+      - "127.0.0.1:8080:8080"
+    image: openrouteservice/openrouteservice:v8.0.0
+    volumes:
+      - $HOME/maps/russia-latest.osm.pbf:/home/ors/files/osm_file.pbf
+      - ./ors-docker:/home/ors
+#      - ./ors-docker/config:/home/ors/config
+    env_file:
+      - .env.docker
+    environment:
+      REBUILD_GRAPHS: True
+      CONTAINER_LOG_LEVEL: INFO
+      ORS_CONFIG_LOCATION: /home/ors/config/ors-config.yml
+      XMS: 4g
+      XMX: 12g
+#      REBUILD_GRAPHS: ${REBUILD_GRAPHS}
+#      CONTAINER_LOG_LEVEL: ${CONTAINER_LOG_LEVEL}
+#      ORS_CONFIG_LOCATION: ${ORS_CONFIG_LOCATION}
+#      XMS: ${XMS}
+#      XMX: ${XMX}
+    depends_on:
+      - nominatim
+    networks:
+      - ors_nominatim_network
+
+networks:
+  ors_nominatim_network:
+    driver: bridge
+
+volumes:
+    nominatim-postgres-data:
+    nominatim-flatnode:

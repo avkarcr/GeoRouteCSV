@@ -1,0 +1,14 @@
+# For a full list of possible parameters see
+#https://giscience.github.io/openrouteservice/run-instance/configuration/
+ors:
+  engine:
+    source_file: /home/ors/files/osm_file.pbf
+    profiles:
+      car:
+        enabled: true
+        profile: driving-car
+        maximum_distance: 11000000
+      hgv:
+        enabled: true
+        profile: driving-hgv
+        maximum_distance: 11000000

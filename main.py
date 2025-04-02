@@ -3,8 +3,6 @@ import csv
 import sys
 import time
 
-from openrouteservice.directions import directions
-
 from logging_config import logger
 from config import COORD_DATA, OUTPUT_FILE
 from utils import (get_open_profile, get_coord_map, get_geo_client,

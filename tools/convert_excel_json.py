@@ -27,6 +27,7 @@ def convert_excel_to_json(excel_path, output_path='input.json'):
 
     print(f"✅ Успешно: {len(pairs)} маршрутов сохранено в {output_path}")
 
+
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("🛈 Использование:")
