@@ -1,10 +1,8 @@
 import requests
 from abc import ABC, abstractmethod
 from colorama import Fore, Style, init
-from loguru import logger
-# import openrouteservice
 
-from config import ORS_LOCALPORT, NOMINATIM_LOCALPORT
+from config import ORS_LOCALPORT, NOMINATIM_LOCALPORT, logger
 from modules.decorators import with_retry_on_failure
 
 init(autoreset=True)
@@ -136,7 +134,6 @@ class ORSLocalGeoSystem(GeoSystem):
             data = response.json()
             return data['routes'][0]['summary']['distance']  # в метрах
         except Exception as e:
-            logger.error(f"Ошибка при получении маршрута: {e}")
             return 0
 
 

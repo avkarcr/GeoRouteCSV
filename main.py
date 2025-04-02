@@ -3,8 +3,7 @@ import csv
 import sys
 import time
 
-from logging_config import logger
-from config import COORD_DATA, OUTPUT_FILE
+from config import COORD_DATA, OUTPUT_FILE, logger
 from utils import (get_open_profile, get_coord_map, get_geo_client,
                    print_banner, get_json_data)
 

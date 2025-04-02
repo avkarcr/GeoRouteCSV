@@ -4,7 +4,7 @@ import sys
 import os
 
 
-def convert_excel_to_json(excel_path, output_path='input.json'):
+def convert_excel_to_json(excel_path, output_path='./data/input.json'):
     if not os.path.isfile(excel_path):
         print(f"❌ Файл не найден: {excel_path}")
         return

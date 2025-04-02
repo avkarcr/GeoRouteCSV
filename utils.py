@@ -134,10 +134,8 @@ def get_coord_map():
 def get_geo_client(vehicle_type):
     if GEO_SYSTEM == 'ors_vps':
         client = ORSLocalGeoSystem(vehicle_type=vehicle_type)
-    elif GEO_SYSTEM == 'openrouteservice':
-        client = ORSCloudGeoSystem(vehicle_type=vehicle_type)
     else:
-        print(f"❌ Система с геоданными {GEO_SYSTEM} не обнаружена, проверьте config.py")
+        print(f"❌ Система с геоданными {GEO_SYSTEM} пока не настроена в скрипте.")
         client = False
     if not client:
         sys.exit(1)
